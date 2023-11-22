@@ -1,19 +1,13 @@
 from abc import ABC, abstractmethod
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-import pandas as pd
 
-from abc import ABC, abstractmethod
-import pandas as pd
 import numpy as np
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, LabelEncoder, OneHotEncoder
+import pandas as pd
 from sklearn.compose import ColumnTransformer
-from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, StandardScaler
+
 
 class DataLoaderProtocol(ABC):
     """
@@ -44,7 +38,7 @@ class DataLoaderProtocol(ABC):
         self.y_train = None
         self.y_test = None
         self.preprocessor = None
-        
+
     @abstractmethod
     def load_data(self):
         """
@@ -56,7 +50,7 @@ class DataLoaderProtocol(ABC):
             tuple: A tuple containing the input features (X) and the target variable (y).
         """
         pass
-    
+
     def preprocess_data(self, X, y):
         """
         Preprocesses the data by applying transformations to numerical, binary, and categorical variables.
@@ -70,33 +64,51 @@ class DataLoaderProtocol(ABC):
             y (pd.Series): The target variable.
         """
         # Preprocessing for numerical variables
-        numerical_transformer = Pipeline(steps=[
-            ('imputer', SimpleImputer(strategy='mean')),
-            ('scaler', StandardScaler())
-        ])
+        numerical_transformer = Pipeline(
+            steps=[
+                ("imputer", SimpleImputer(strategy="mean")),
+                ("scaler", StandardScaler()),
+            ]
+        )
 
         # Preprocessing for binary variables
-        binary_transformer = Pipeline(steps=[
-            ('imputer', SimpleImputer(strategy='most_frequent')),
-            ('labeler', LabelEncoder())
-        ])
+        binary_transformer = Pipeline(
+            steps=[
+                ("imputer", SimpleImputer(strategy="most_frequent")),
+                ("labeler", LabelEncoder()),
+            ]
+        )
 
         # Preprocessing for categorical variables
-        categorical_transformer = Pipeline(steps=[
-            ('imputer', SimpleImputer(strategy='most_frequent')),
-            ('onehot', OneHotEncoder())
-        ])
+        categorical_transformer = Pipeline(
+            steps=[
+                ("imputer", SimpleImputer(strategy="most_frequent")),
+                ("onehot", OneHotEncoder()),
+            ]
+        )
 
         # Combine all preprocessing steps
         self.preprocessor = ColumnTransformer(
             transformers=[
-                ('num', numerical_transformer, X.select_dtypes(include=['float64', 'int64']).columns),
-                ('bin', binary_transformer, X.select_dtypes(include=['bool']).columns),
-                ('cat', categorical_transformer, X.select_dtypes(include=['object']).columns)
-            ])
+                (
+                    "num",
+                    numerical_transformer,
+                    X.select_dtypes(include=["float64", "int64"]).columns,
+                ),
+                ("bin", binary_transformer, X.select_dtypes(include=["bool"]).columns),
+                (
+                    "cat",
+                    categorical_transformer,
+                    X.select_dtypes(include=["object"]).columns,
+                ),
+            ]
+        )
 
         # Apply preprocessing to X
-        X_preprocessed = pd.DataFrame(self.preprocessor.fit_transform(X), columns=self.preprocessor.get_feature_names_out())
+        X_preprocessed = pd.DataFrame(
+            self.preprocessor.fit_transform(X),
+            columns=self.preprocessor.get_feature_names_out(),
+        )
 
         return X_preprocessed, y
 
@@ -118,12 +130,16 @@ class DataLoaderProtocol(ABC):
 
         # Split the dataset into train and test sets
         if self.sample_type != "regression":
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X_preprocessed, y, test_size=0.2, stratify=y)
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                X_preprocessed, y, test_size=0.2, stratify=y
+            )
         else:
-            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(X_preprocessed, y, test_size=0.2)
+            self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+                X_preprocessed, y, test_size=0.2
+            )
 
         return self.X_train, self.X_test, self.y_train, self.y_test
-    
+
     def get_train_data(self):
         """
         Returns the training data.

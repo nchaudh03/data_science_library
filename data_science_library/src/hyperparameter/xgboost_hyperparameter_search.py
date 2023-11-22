@@ -1,9 +1,13 @@
-import xgboost as xgb
 from typing import Any, Dict, Tuple
-from sklearn.metrics import log_loss, mean_squared_error
-from data_science_library.src.protocals.hyperparameter_search import HyperparameterSearchProtocol
+
 import optuna
 import pandas as pd
+import xgboost as xgb
+from sklearn.metrics import log_loss, mean_squared_error
+
+from data_science_library.src.protocals.hyperparameter_search import (
+    HyperparameterSearchProtocol,
+)
 
 
 class XGBoostHyperparameterSearch(HyperparameterSearchProtocol):
@@ -23,7 +27,13 @@ class XGBoostHyperparameterSearch(HyperparameterSearchProtocol):
         task (str): The task type, either 'classification' or 'regression'.
     """
 
-    def __init__(self, train_data: Tuple[pd.DataFrame, pd.DataFrame], valid_data: Tuple[pd.DataFrame, pd.DataFrame], params: Dict[str, Any], task: str):
+    def __init__(
+        self,
+        train_data: Tuple[pd.DataFrame, pd.DataFrame],
+        valid_data: Tuple[pd.DataFrame, pd.DataFrame],
+        params: Dict[str, Any],
+        task: str,
+    ):
         self.train_data = train_data
         self.valid_data = valid_data
         self.params = params
@@ -40,17 +50,20 @@ class XGBoostHyperparameterSearch(HyperparameterSearchProtocol):
             float: The evaluation metric value for the current set of hyperparameters.
         """
         param = {
-
-            'booster': 'gbtree',
-            'max_depth': trial.suggest_int('max_depth', 2, 10),
-            'learning_rate': trial.suggest_loguniform('learning_rate', 0.01, 0.1),
-            'subsample': trial.suggest_uniform('subsample', 0.1, 1.0),
-            'colsample_bytree': trial.suggest_uniform('colsample_bytree', 0.1, 1.0),
-            'min_child_weight': trial.suggest_int('min_child_weight', 1, 10),
-            'gamma': trial.suggest_loguniform('gamma', 0.01, 1.0),  # Additional hyperparameter
-            'lambda': trial.suggest_loguniform('lambda', 0.01, 1.0),  # Additional hyperparameter
+            "booster": "gbtree",
+            "max_depth": trial.suggest_int("max_depth", 2, 10),
+            "learning_rate": trial.suggest_loguniform("learning_rate", 0.01, 0.1),
+            "subsample": trial.suggest_uniform("subsample", 0.1, 1.0),
+            "colsample_bytree": trial.suggest_uniform("colsample_bytree", 0.1, 1.0),
+            "min_child_weight": trial.suggest_int("min_child_weight", 1, 10),
+            "gamma": trial.suggest_loguniform(
+                "gamma", 0.01, 1.0
+            ),  # Additional hyperparameter
+            "lambda": trial.suggest_loguniform(
+                "lambda", 0.01, 1.0
+            ),  # Additional hyperparameter
         }
-        
+
         param.update(self.params)
 
         train_x, train_y = self.train_data
@@ -59,7 +72,16 @@ class XGBoostHyperparameterSearch(HyperparameterSearchProtocol):
         train_dataset = xgb.DMatrix(train_x, label=train_y)
         valid_dataset = xgb.DMatrix(valid_x, label=valid_y)
 
-        model = xgb.train(param, train_dataset, evals=[(valid_dataset, 'validation')], early_stopping_rounds=10)
+        model = xgb.train(
+            param,
+            train_dataset,
+            evals=[(valid_dataset, "validation")],
+            early_stopping_rounds=10,
+        )
         predictions = model.predict(valid_dataset)
 
-        return log_loss(valid_y, predictions) if self.task == 'classification' else mean_squared_error(valid_y, predictions)
+        return (
+            log_loss(valid_y, predictions)
+            if self.task == "classification"
+            else mean_squared_error(valid_y, predictions)
+        )

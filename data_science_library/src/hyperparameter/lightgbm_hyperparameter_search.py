@@ -1,9 +1,13 @@
-import lightgbm as lgb
 from typing import Any, Dict, Tuple
-from sklearn.metrics import log_loss, mean_squared_error
-from data_science_library.src.protocals.hyperparameter_search import HyperparameterSearchProtocol
+
+import lightgbm as lgb
 import optuna
 import pandas as pd
+from sklearn.metrics import log_loss, mean_squared_error
+
+from data_science_library.src.protocals.hyperparameter_search import (
+    HyperparameterSearchProtocol,
+)
 
 
 class LightGBMHyperparameterSearch(HyperparameterSearchProtocol):
@@ -22,7 +26,13 @@ class LightGBMHyperparameterSearch(HyperparameterSearchProtocol):
     ```
     """
 
-    def __init__(self, train_data: Tuple[pd.DataFrame, pd.DataFrame], valid_data: Tuple[pd.DataFrame, pd.DataFrame], params: Dict[str, Any], task: str):
+    def __init__(
+        self,
+        train_data: Tuple[pd.DataFrame, pd.DataFrame],
+        valid_data: Tuple[pd.DataFrame, pd.DataFrame],
+        params: Dict[str, Any],
+        task: str,
+    ):
         """
         Initialize the LightGBMHyperparameterSearch instance.
 
@@ -48,15 +58,17 @@ class LightGBMHyperparameterSearch(HyperparameterSearchProtocol):
             The loss value (log loss or mean squared error) for the current set of hyperparameters.
         """
         param = self.params.copy()
-        param.update({
-            'boosting_type': 'gbdt',
-            'num_leaves': trial.suggest_int('num_leaves', 2, 256),
-            'learning_rate': trial.suggest_loguniform('learning_rate', 0.01, 0.1),
-            'feature_fraction': trial.suggest_uniform('feature_fraction', 0.1, 1.0),
-            'bagging_fraction': trial.suggest_uniform('bagging_fraction', 0.1, 1.0),
-            'bagging_freq': trial.suggest_int('bagging_freq', 1, 10),
-            'min_child_samples': trial.suggest_int('min_child_samples', 5, 100),
-        })
+        param.update(
+            {
+                "boosting_type": "gbdt",
+                "num_leaves": trial.suggest_int("num_leaves", 2, 256),
+                "learning_rate": trial.suggest_loguniform("learning_rate", 0.01, 0.1),
+                "feature_fraction": trial.suggest_uniform("feature_fraction", 0.1, 1.0),
+                "bagging_fraction": trial.suggest_uniform("bagging_fraction", 0.1, 1.0),
+                "bagging_freq": trial.suggest_int("bagging_freq", 1, 10),
+                "min_child_samples": trial.suggest_int("min_child_samples", 5, 100),
+            }
+        )
 
         print(param)
 
@@ -69,14 +81,17 @@ class LightGBMHyperparameterSearch(HyperparameterSearchProtocol):
         model = lgb.train(param, train_dataset, valid_sets=[valid_dataset])
         predictions = model.predict(valid_x)
 
-        if self.task == 'binary':
+        if self.task == "binary":
             loss_value = log_loss(valid_y, predictions)
-        elif self.task == 'regression':
+        elif self.task == "regression":
             loss_value = mean_squared_error(valid_y, predictions)
-        elif self.task == 'multiclass':
-            loss_value = log_loss(valid_y, predictions)  # You can modify this accordingly for multiclass loss
+        elif self.task == "multiclass":
+            loss_value = log_loss(
+                valid_y, predictions
+            )  # You can modify this accordingly for multiclass loss
         else:
-            raise ValueError("Invalid task type. Supported task types are 'binary', 'regression', and 'multiclass'.")
+            raise ValueError(
+                "Invalid task type. Supported task types are 'binary', 'regression', and 'multiclass'."
+            )
 
         return loss_value
-

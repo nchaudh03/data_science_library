@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
+
 import optuna
-from abc import ABC, abstractmethod
-import optuna
+
 
 class HyperparameterSearchProtocol(ABC):
     """
@@ -39,6 +39,7 @@ class HyperparameterSearchProtocol(ABC):
         search = MyHyperparameterSearch()
         study = search.optimize("my_study", 100)
     """
+
     @abstractmethod
     def objective(self, trial: optuna.Trial) -> float:
         pass
@@ -47,6 +48,3 @@ class HyperparameterSearchProtocol(ABC):
         study = optuna.create_study(study_name=study_name)
         study.optimize(self.objective, n_trials=n_trials)
         return study
-
-
-

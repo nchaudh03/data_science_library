@@ -1,6 +1,8 @@
+import xgboost as xgb
+
 from data_science_library.src.protocals.dataloader import DataLoaderProtocol
 from data_science_library.src.protocals.models import ModelsProtocol
-import xgboost as xgb
+
 
 class XGBoostModel(ModelsProtocol):
     """

@@ -1,6 +1,8 @@
+import lightgbm as lgb
+
 from data_science_library.src.protocals.dataloader import DataLoaderProtocol
 from data_science_library.src.protocals.models import ModelsProtocol
-import lightgbm as lgb
+
 
 class LightGBMModel(ModelsProtocol):
     """
