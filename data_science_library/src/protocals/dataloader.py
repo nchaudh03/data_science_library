@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -40,18 +41,20 @@ class DataLoaderProtocol(ABC):
         self.preprocessor = None
 
     @abstractmethod
-    def load_data(self):
+    def load_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Abstract method to load the raw data.
 
         Subclasses must implement this method to load the raw data.
 
         Returns:
-            tuple: A tuple containing the input features (X) and the target variable (y).
+            tuple: A tuple containing the input features dataframe (X) and the target variable dataframe (y).
         """
         pass
 
-    def preprocess_data(self, X, y):
+    def preprocess_data(
+        self, X: pd.DataFrame, y: pd.DataFrame
+    ) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
         Preprocesses the data by applying transformations to numerical, binary, and categorical variables.
 
