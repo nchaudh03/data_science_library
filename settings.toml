@@ -1,0 +1,17 @@
+[default]
+ENVIRONMENT = "dev"
+SAMPLE_LOADER_TYPE = "multiclass"
+STUDY_NAME = "dev_study"
+N_TRIALS = 10
+
+[preprod]
+ENVIRONMENT = "preprod"
+SAMPLE_LOADER_TYPE = "classification"
+STUDY_NAME = "preprod_study"
+N_TRIALS = 50
+
+[prod]
+ENVIRONMENT = "prod"
+SAMPLE_LOADER_TYPE = "classification"
+STUDY_NAME = "prod_study"
+N_TRIALS = 100
